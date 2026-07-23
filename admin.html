@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%230B1B2B'/><path d='M28 78V34l22-12 22 12v44' stroke='%23D99B26' stroke-width='7' fill='none'/><path d='M50 30v48' stroke='%23D99B26' stroke-width='7'/></svg>">
+    <title>Admin - HSMETALLERIE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+    <!-- ÉCRAN DE CONNEXION (affiché tant que l'admin n'est pas authentifié) -->
+    <div id="loginScreen" class="login-screen" style="display:none;">
+        <form class="login-card" id="loginForm">
+            <div class="login-logo">HS <span>METALLERIE</span></div>
+            <div class="login-sub">Espace administrateur</div>
+            <div class="form-group">
+                <label for="loginEmail">E-mail</label>
+                <input type="email" id="loginEmail" required autocomplete="username" placeholder="admin@exemple.com">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Mot de passe</label>
+                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+            </div>
+            <div class="login-error" id="loginError"></div>
+            <button type="submit" class="btn-primary full"><i class="fa-solid fa-right-to-bracket"></i> Se connecter</button>
+        </form>
+    </div>
+
+    <!-- APPLICATION ADMIN (affichée après connexion) -->
+    <div id="adminApp" style="display:none;">
+
+        <header class="admin-header">
+            <div class="logo">HS <span>METALLERIE</span> <span style="font-size:0.7rem; font-weight:400; color:#94a3b8;">| Admin</span></div>
+            <div class="header-actions">
+                <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Retour au site</a>
+                <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>
+            </div>
+        </header>
+
+        <div class="admin-container">
+            <!-- TABS -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('devis')"><i class="fa-solid fa-envelope"></i> Demandes de devis</button>
+                <button class="tab-btn" onclick="switchTab('realisations')"><i class="fa-solid fa-images"></i> Gestion des réalisations</button>
+            </div>
+
+            <!-- TAB 1: DEVIS -->
+            <div id="tab-devis" class="tab-content active">
+                <div class="stats-admin">
+                    <div class="stat-card"><div class="number" id="totalDemandes">0</div><div class="label">Total demandes</div></div>
+                    <div class="stat-card"><div class="number" id="enAttente">0</div><div class="label">En attente</div></div>
+                    <div class="stat-card"><div class="number" id="traitees">0</div><div class="label">Traitées</div></div>
+                    <div class="stat-card"><div class="number" id="ignorees">0</div><div class="label">Ignorées</div></div>
+                </div>
+
+                <div class="filters">
+                    <input type="text" id="searchInput" placeholder="🔍 Rechercher..." style="flex:1; min-width:200px;">
+                    <select id="statusFilter">
+                        <option value="all">Tous les statuts</option>
+                        <option value="en-attente">En attente</option>
+                        <option value="traite">Traité</option>
+                        <option value="ignore">Ignoré</option>
+                    </select>
+                    <button class="btn-filter" onclick="appliquerFiltres()"><i class="fa-solid fa-filter"></i> Filtrer</button>
+                    <button class="btn-clear" onclick="reinitialiserFiltres()"><i class="fa-solid fa-rotate-left"></i> Réinitialiser</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nom / Entreprise</th>
+                                    <th>Email</th>
+                                    <th>Téléphone</th>
+                                    <th>Prestation</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th style="text-align:center;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: RÉALISATIONS -->
+            <div id="tab-realisations" class="tab-content">
+                <div class="form-card">
+                    <h3><i class="fa-solid fa-plus-circle" style="color: var(--accent-gold);"></i> Ajouter une réalisation</h3>
+                    <form id="formRealisation" onsubmit="ajouterRealisation(event)">
+                        <div class="form-group">
+                            <label for="realTitre">Titre *</label>
+                            <input type="text" id="realTitre" required placeholder="Ex: Charpente métallique industrielle">
+                        </div>
+                        <div class="form-group">
+                            <label for="realDescription">Description complète *</label>
+                            <textarea id="realDescription" rows="4" required placeholder="Décrivez le projet en détail..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="realImages">Images (sélectionnez plusieurs) *</label>
+                            <input type="file" id="realImages" accept="image/*" multiple required>
+                            <div class="image-preview-container" id="imagePreviewContainer"></div>
+                            <small style="color: var(--text-muted); margin-top: 0.3rem;">Sélectionnez plusieurs images (Ctrl+clic ou Shift+clic)</small>
+                        </div>
+                        <button type="submit" class="btn-primary"><i class="fa-solid fa-save"></i> Publier la réalisation</button>
+                    </form>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color: var(--primary-blue);">
+                    <i class="fa-solid fa-list"></i> Mes réalisations publiées
+                    <span id="nbRealisations" style="font-size:0.9rem; color: var(--text-muted); font-weight:400;">(0)</span>
+                </h3>
+                <div id="realisationsList" class="realisations-grid-admin"></div>
+            </div>
+        </div>
+
+        <!-- MODAL DÉTAIL DEVIS -->
+        <div class="modal-overlay" id="detailModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-file-invoice" style="color: var(--accent-gold);"></i> Détail de la demande</h2>
+                    <button class="modal-close" onclick="fermerModal()">&times;</button>
+                </div>
+                <div id="modalContent"></div>
+                <button class="btn-close-modal" onclick="fermerModal()">Fermer</button>
+            </div>
+        </div>
+
+        <!-- MODAL DÉTAIL RÉALISATION -->
+        <div class="modal-overlay" id="detailRealModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2><i class="fa-solid fa-image" style="color: var(--accent-gold);"></i> Détail de la réalisation</h2>
+                    <button class="modal-close" onclick="fermerRealModal()">&times;</button>
+                </div>
+                <div id="modalRealContent"></div>
+                <button class="btn-close-modal" onclick="fermerRealModal()">Fermer</button>
+            </div>
+        </div>
+
+        <!-- TOAST -->
+        <div class="toast" id="toast">
+            <div class="toast-title"><i class="fa-solid fa-check-circle" style="color: var(--accent-gold);"></i> Info</div>
+            <div id="toastMessage">Action effectuée</div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/config.js"></script>
+    <script src="assets/js/supabase.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/auth.js"></script>
+</body>
+</html>

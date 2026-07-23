@@ -11,8 +11,8 @@
  * ici — elle contourne toute sécurité.
  * ========================================================================== */
 window.HSM_CONFIG = {
-    SUPABASE_URL:      'https://VOTRE-PROJET.supabase.co',
-    SUPABASE_ANON_KEY: 'VOTRE_CLE_ANON_PUBLIQUE',
+    SUPABASE_URL:      'https://cuygrhftpkhhkxxpdjkk.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_XURgs9K6ybA6TBPUWkXwzA_qThspCE_',
 
     // Adresse affichée dans le pied de page / contact.
     EMAIL_CONTACT: 'hsmetallerie@gmail.com'

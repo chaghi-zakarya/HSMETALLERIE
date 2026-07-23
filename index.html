@@ -9,6 +9,95 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/styles.css">
+
+    <style>
+        /* Diaporama plein écran (réalisations) */
+        .slideshow-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 27, 43, 0.97);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .slideshow-overlay.active { display: flex; }
+        .slideshow-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 2.5rem;
+            line-height: 1;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .slideshow-close:hover { color: #D99B26; }
+        .slideshow-arrow {
+            position: absolute;
+            top: 45%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            z-index: 2;
+        }
+        .slideshow-arrow:hover { background: rgba(217, 155, 38, 0.9); }
+        .slideshow-arrow-left { left: 1rem; }
+        .slideshow-arrow-right { right: 1rem; }
+        .slideshow-main {
+            max-width: 90vw;
+            max-height: 62vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slideshow-main img {
+            max-width: 90vw;
+            max-height: 62vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .slideshow-info {
+            max-width: 700px;
+            width: 90%;
+            text-align: center;
+            color: #fff;
+            margin-top: 1.5rem;
+        }
+        .slideshow-info h2 {
+            color: #D99B26;
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+        .slideshow-info p {
+            color: #E2E8F0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+        .slideshow-info span#slideshowCounter {
+            color: #94A3B8;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 700px) {
+            .slideshow-arrow { width: 44px; height: 44px; font-size: 1.1rem; }
+            .slideshow-close { font-size: 2rem; top: 1rem; right: 1rem; }
+        }
+    </style>
 </head>
 <body>
 
@@ -16,12 +105,7 @@
     <header>
         <div class="nav-container">
             <div class="logo-container">
-                <svg class="logo-svg" viewBox="0 0 100 100">
-                    <path d="M 10 90 L 10 30 L 50 10 L 90 30 L 90 90" stroke="#D99B26" stroke-width="6" fill="none"/>
-                    <path d="M 30 90 L 30 45 L 50 30 L 70 45 L 70 90" stroke="#D99B26" stroke-width="6" fill="none"/>
-                    <path d="M 50 30 L 50 90" stroke="#D99B26" stroke-width="6"/>
-                </svg>
-                <div class="logo-text">HS <span>METALLERIE</span></div>
+                <img src="assets/img/logo.png" alt="HS Metallerie" class="logo-img" style="height: 48px; width: auto;">
             </div>
             <nav>
                 <ul>
@@ -211,15 +295,22 @@
         </div>
     </section>
 
-    <!-- MODAL RÉALISATION -->
-    <div class="modal-overlay" id="realModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h2 id="realModalTitle"><i class="fa-solid fa-image" style="color: var(--accent-gold);"></i> Détail du projet</h2>
-                <button class="modal-close" onclick="fermerModalReal()">&times;</button>
-            </div>
-            <div id="realModalContent"></div>
-            <button class="btn-close-modal" onclick="fermerModalReal()">Fermer</button>
+    <!-- DIAPORAMA RÉALISATION (plein écran) -->
+    <div class="slideshow-overlay" id="realModal">
+        <button class="slideshow-close" onclick="fermerModalReal()" aria-label="Fermer">&times;</button>
+        <button class="slideshow-arrow slideshow-arrow-left" onclick="slideshowPrev()" aria-label="Image précédente">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <div class="slideshow-main">
+            <img id="slideshowImage" src="" alt="">
+        </div>
+        <button class="slideshow-arrow slideshow-arrow-right" onclick="slideshowNext()" aria-label="Image suivante">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div class="slideshow-info">
+            <h2 id="realModalTitle"></h2>
+            <p id="slideshowDescription"></p>
+            <span id="slideshowCounter"></span>
         </div>
     </div>
 
@@ -313,6 +404,7 @@
                 <h3>CONTACT</h3>
                 <ul class="contact-info">
                     <li><i class="fa-solid fa-phone"></i> +33 6 05 24 22 08</li>
+                    <li><i class="fa-solid fa-phone"></i> +33 6 50 86 55 85</li>
                     <li><i class="fa-solid fa-envelope"></i> hsmetallerie@gmail.com</li>
                     <li><i class="fa-solid fa-location-dot"></i> 25 rue du Maréchal Foch, 78000 Versailles</li>
                 </ul>

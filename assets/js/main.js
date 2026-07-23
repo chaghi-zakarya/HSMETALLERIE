@@ -58,7 +58,7 @@
     };
 
     // -----------------------------------------------------------------------
-    // GALERIE DES RÉALISATIONS
+    // GALERIE DES RÉALISATIONS (grille de cartes)
     // -----------------------------------------------------------------------
     function renderGalerie() {
         const grid = document.getElementById('realisationsGrid');
@@ -89,58 +89,77 @@
     }
 
     // -----------------------------------------------------------------------
-    // MODAL DÉTAIL
+    // DIAPORAMA PLEIN ÉCRAN
     // -----------------------------------------------------------------------
+    let currentRealisation = null;
+    let currentImageIndex = 0;
+
+    function renderSlide() {
+        if (!currentRealisation) return;
+        const images = currentRealisation.images.length ? currentRealisation.images : [PLACEHOLDER];
+        const total = images.length;
+
+        document.getElementById('slideshowImage').src = esc(images[currentImageIndex] || PLACEHOLDER);
+        document.getElementById('slideshowImage').alt = esc(currentRealisation.titre);
+        document.getElementById('realModalTitle').textContent = currentRealisation.titre;
+        document.getElementById('slideshowDescription').textContent = currentRealisation.description;
+        document.getElementById('slideshowCounter').textContent =
+            total > 1 ? `Image ${currentImageIndex + 1} / ${total}` : '';
+
+        // Cache les flèches s'il n'y a qu'une seule image
+        const showArrows = total > 1;
+        document.querySelectorAll('.slideshow-arrow').forEach(btn => {
+            btn.style.display = showArrows ? 'flex' : 'none';
+        });
+    }
+
     window.ouvrirModalReal = function (id) {
         const r = realisationsCache.find(x => x.id === id);
         if (!r) return;
 
-        const main = esc(r.images[0] || PLACEHOLDER);
-        let gallery = '';
-        if (r.images.length > 1) {
-            gallery = `<div class="images-gallery">${
-                r.images.slice(1).map(img =>
-                    `<img src="${esc(img)}" alt="${esc(r.titre)}" onclick="event.stopPropagation();">`
-                ).join('')
-            }</div>`;
-        }
+        currentRealisation = r;
+        currentImageIndex = 0;
+        renderSlide();
 
-        document.getElementById('realModalContent').innerHTML = `
-            <img src="${main}" alt="${esc(r.titre)}" class="main-image" onerror="this.src='${PLACEHOLDER}'">
-            ${gallery}
-            <div class="modal-detail-item">
-                <span class="label">Titre</span>
-                <span class="value"><strong>${esc(r.titre)}</strong></span>
-            </div>
-            <div class="modal-detail-item">
-                <span class="label">Description</span>
-                <span class="value">${esc(r.description)}</span>
-            </div>
-            <div class="modal-detail-item" style="border-bottom:none;">
-                <span class="label">Publié le</span>
-                <span class="value">${esc(r.date)}</span>
-            </div>`;
-
-        document.getElementById('realModalTitle').innerHTML =
-            `<i class="fa-solid fa-image" style="color:var(--accent-gold);"></i> ${esc(r.titre)}`;
         document.getElementById('realModal').classList.add('active');
         document.body.style.overflow = 'hidden';
+    };
+
+    window.slideshowNext = function () {
+        if (!currentRealisation) return;
+        const total = currentRealisation.images.length || 1;
+        currentImageIndex = (currentImageIndex + 1) % total;
+        renderSlide();
+    };
+
+    window.slideshowPrev = function () {
+        if (!currentRealisation) return;
+        const total = currentRealisation.images.length || 1;
+        currentImageIndex = (currentImageIndex - 1 + total) % total;
+        renderSlide();
     };
 
     window.fermerModalReal = function () {
         document.getElementById('realModal').classList.remove('active');
         document.body.style.overflow = '';
+        currentRealisation = null;
     };
 
     // -----------------------------------------------------------------------
     // INITIALISATION
     // -----------------------------------------------------------------------
     document.addEventListener('DOMContentLoaded', async function () {
+        // Ferme si on clique en dehors de l'image / des infos
         document.getElementById('realModal').addEventListener('click', function (e) {
             if (e.target === this) window.fermerModalReal();
         });
+
+        // Navigation clavier : Échap pour fermer, flèches pour naviguer
         document.addEventListener('keydown', function (e) {
+            if (!document.getElementById('realModal').classList.contains('active')) return;
             if (e.key === 'Escape') window.fermerModalReal();
+            if (e.key === 'ArrowRight') window.slideshowNext();
+            if (e.key === 'ArrowLeft') window.slideshowPrev();
         });
 
         try {

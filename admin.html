@@ -15,7 +15,7 @@
     <!-- ÉCRAN DE CONNEXION (affiché tant que l'admin n'est pas authentifié) -->
     <div id="loginScreen" class="login-screen" style="display:none;">
         <form class="login-card" id="loginForm">
-            <div class="login-logo">HS <span>METALLERIE</span></div>
+            <img src="assets/img/logo.png" alt="HS Metallerie" style="height: 56px; width: auto; display:block; margin: 0 auto 0.8rem;">
             <div class="login-sub">Espace administrateur</div>
             <div class="form-group">
                 <label for="loginEmail">E-mail</label>
@@ -34,7 +34,10 @@
     <div id="adminApp" style="display:none;">
 
         <header class="admin-header">
-            <div class="logo">HS <span>METALLERIE</span> <span style="font-size:0.7rem; font-weight:400; color:#94a3b8;">| Admin</span></div>
+            <div class="logo" style="display:flex; align-items:center; gap:0.6rem;">
+                <img src="assets/img/logo.png" alt="HS Metallerie" style="height: 36px; width: auto;">
+                <span style="font-size:0.7rem; font-weight:400; color:#94a3b8;">| Admin</span>
+            </div>
             <div class="header-actions">
                 <a href="index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Retour au site</a>
                 <button class="btn-logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Déconnexion</button>

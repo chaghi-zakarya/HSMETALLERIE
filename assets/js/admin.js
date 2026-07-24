@@ -24,26 +24,45 @@
     }
 
     // -----------------------------------------------------------------------
-    // APERÇU DES IMAGES (avant envoi)
+    // APERÇU DES IMAGES (avant envoi) — formulaire "Ajouter une réalisation"
+    // Sélection CUMULATIVE : rouvrir le sélecteur ajoute des images au lieu
+    // de remplacer celles déjà choisies (comportement natif du navigateur
+    // sinon : chaque nouvelle ouverture du sélecteur écrase la précédente).
     // -----------------------------------------------------------------------
     function bindImagePreview() {
         const input = document.getElementById('realImages');
         input.addEventListener('change', function () {
-            const container = document.getElementById('imagePreviewContainer');
-            container.innerHTML = '';
-            selectedFiles = Array.from(input.files).filter(f => f.type.startsWith('image/'));
-            selectedFiles.forEach((file, index) => {
-                const reader = new FileReader();
-                reader.onload = function (ev) {
-                    const div = document.createElement('div');
-                    div.className = 'image-preview-item';
-                    div.innerHTML =
-                        `<img src="${ev.target.result}" alt="Aperçu">` +
-                        `<button class="remove-img" type="button" onclick="removeImage(${index})">×</button>`;
-                    container.appendChild(div);
-                };
-                reader.readAsDataURL(file);
+            const nouveaux = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+
+            nouveaux.forEach(file => {
+                const dejaPresent = selectedFiles.some(f =>
+                    f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
+                if (!dejaPresent) selectedFiles.push(file);
             });
+
+            // Reconstruit le champ pour qu'il contienne bien TOUTES les images cumulées
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+
+            renderImagePreview();
+        });
+    }
+
+    function renderImagePreview() {
+        const container = document.getElementById('imagePreviewContainer');
+        container.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                const div = document.createElement('div');
+                div.className = 'image-preview-item';
+                div.innerHTML =
+                    `<img src="${ev.target.result}" alt="Aperçu">` +
+                    `<button class="remove-img" type="button" onclick="removeImage(${index})">×</button>`;
+                container.appendChild(div);
+            };
+            reader.readAsDataURL(file);
         });
     }
 
@@ -57,7 +76,7 @@
     };
 
     // =======================================================================
-    // RÉALISATIONS
+    // RÉALISATIONS — AJOUT
     // =======================================================================
     window.ajouterRealisation = async function (event) {
         event.preventDefault();
@@ -126,6 +145,132 @@
         document.getElementById('detailRealModal').classList.remove('active');
     };
 
+    // =======================================================================
+    // RÉALISATIONS — MODIFICATION
+    // =======================================================================
+    let editingId = null;
+    let editKeepImages = [];   // URLs des images existantes conservées
+    let editRemovedImages = []; // URLs des images existantes retirées (à supprimer du stockage à l'enregistrement)
+    let editNewFiles = [];     // nouveaux fichiers à uploader
+
+    function renderEditImages() {
+        const container = document.getElementById('editImagesContainer');
+        if (editKeepImages.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">Aucune image conservée — ajoutez-en au moins une ci-dessous.</p>`;
+            return;
+        }
+        container.innerHTML = editKeepImages.map((img, i) => `
+            <div class="image-preview-item">
+                <img src="${esc(img)}" alt="">
+                <button class="remove-img" type="button" onclick="removeEditImage(${i})" title="Retirer cette image">×</button>
+            </div>`).join('');
+    }
+
+    window.removeEditImage = function (index) {
+        const removed = editKeepImages.splice(index, 1);
+        editRemovedImages.push(...removed);
+        renderEditImages();
+    };
+
+    window.ouvrirEditionRealisation = function (id) {
+        const r = realisationsCache.find(x => x.id === id);
+        if (!r) return;
+
+        editingId = id;
+        editKeepImages = [...r.images];   // copie indépendante -> n'affecte pas les autres réalisations
+        editRemovedImages = [];
+        editNewFiles = [];
+
+        document.getElementById('editTitre').value = r.titre;
+        document.getElementById('editDescription').value = r.description;
+        document.getElementById('editNewImages').value = '';
+        document.getElementById('editNewImagesPreview').innerHTML = '';
+        renderEditImages();
+
+        document.getElementById('editRealModal').classList.add('active');
+    };
+
+    window.fermerEditModal = function () {
+        document.getElementById('editRealModal').classList.remove('active');
+        editingId = null;
+    };
+
+    function bindEditImagePreview() {
+        const input = document.getElementById('editNewImages');
+        input.addEventListener('change', function () {
+            const nouveaux = Array.from(input.files).filter(f => f.type.startsWith('image/'));
+
+            nouveaux.forEach(file => {
+                const dejaPresent = editNewFiles.some(f =>
+                    f.name === file.name && f.size === file.size && f.lastModified === file.lastModified);
+                if (!dejaPresent) editNewFiles.push(file);
+            });
+
+            const dt = new DataTransfer();
+            editNewFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+
+            const container = document.getElementById('editNewImagesPreview');
+            container.innerHTML = '';
+            editNewFiles.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = function (ev) {
+                    const div = document.createElement('div');
+                    div.className = 'image-preview-item';
+                    div.innerHTML = `<img src="${ev.target.result}" alt="Nouvelle image">`;
+                    container.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+    }
+
+    window.enregistrerEditionRealisation = async function (event) {
+        event.preventDefault();
+        if (!editingId) return;
+
+        const titre = document.getElementById('editTitre').value.trim();
+        const description = document.getElementById('editDescription').value.trim();
+
+        if (!titre || !description) {
+            showToast('⚠️ Le titre et la description sont obligatoires.');
+            return;
+        }
+        if (editKeepImages.length === 0 && editNewFiles.length === 0) {
+            showToast('⚠️ Il faut garder ou ajouter au moins une image.');
+            return;
+        }
+
+        const tropLourde = editNewFiles.find(f => f.size > MAX_IMAGE_BYTES);
+        if (tropLourde) {
+            showToast(`⚠️ « ${tropLourde.name} » dépasse ${MAX_IMAGE_MB} Mo.`);
+            return;
+        }
+
+        const btn = document.querySelector('#formEditRealisation button[type="submit"]');
+        btn.disabled = true;
+        showToast('⏳ Enregistrement…');
+        try {
+            await window.API.modifierRealisation(editingId, {
+                titre, description,
+                keepImages: editKeepImages,
+                newFiles: editNewFiles
+            });
+            // Nettoyage best-effort des images retirées (uniquement celles de CETTE réalisation)
+            if (editRemovedImages.length) {
+                await window.API.supprimerImagesStorage(editRemovedImages);
+            }
+            window.fermerEditModal();
+            await chargerRealisations();
+            showToast('✅ Réalisation mise à jour avec succès !');
+        } catch (e) {
+            console.error(e);
+            showToast('❌ Mise à jour impossible : ' + (e.message || 'erreur inconnue'));
+        } finally {
+            btn.disabled = false;
+        }
+    };
+
     function renderRealisations() {
         const container = document.getElementById('realisationsList');
         document.getElementById('nbRealisations').textContent = `(${realisationsCache.length})`;
@@ -154,6 +299,7 @@
                         <small style="color:var(--text-muted); font-size:0.75rem;">${esc(r.date)} • ${nb} image${nb > 1 ? 's' : ''}</small>
                         <div class="card-actions">
                             <button class="btn-edit" onclick="voirDetailRealAdmin('${esc(r.id)}')"><i class="fa-solid fa-eye"></i> Voir</button>
+                            <button class="btn-edit" onclick="ouvrirEditionRealisation('${esc(r.id)}')"><i class="fa-solid fa-pen"></i> Modifier</button>
                             <button class="btn-danger" onclick="supprimerRealisation('${esc(r.id)}')"><i class="fa-solid fa-trash"></i> Supprimer</button>
                         </div>
                     </div>
@@ -321,11 +467,15 @@
         initDone = true;
 
         bindImagePreview();
+        bindEditImagePreview();
         document.getElementById('detailModal').addEventListener('click', function (e) {
             if (e.target === this) window.fermerModal();
         });
         document.getElementById('detailRealModal').addEventListener('click', function (e) {
             if (e.target === this) window.fermerRealModal();
+        });
+        document.getElementById('editRealModal').addEventListener('click', function (e) {
+            if (e.target === this) window.fermerEditModal();
         });
         document.getElementById('searchInput').addEventListener('keyup', function (e) {
             if (e.key === 'Enter') window.appliquerFiltres();

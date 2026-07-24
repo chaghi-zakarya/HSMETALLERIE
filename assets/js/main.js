@@ -10,6 +10,23 @@
     let realisationsCache = [];
 
     // -----------------------------------------------------------------------
+    // MENU MOBILE (hamburger)
+    // -----------------------------------------------------------------------
+    window.toggleMenuMobile = function () {
+        const nav = document.getElementById('mainNav');
+        const btn = document.getElementById('burgerBtn');
+        const icon = btn.querySelector('i');
+        const estOuvert = nav.classList.toggle('mobile-open');
+        icon.className = estOuvert ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+    };
+    window.fermerMenuMobile = function () {
+        const nav = document.getElementById('mainNav');
+        const btn = document.getElementById('burgerBtn');
+        nav.classList.remove('mobile-open');
+        btn.querySelector('i').className = 'fa-solid fa-bars';
+    };
+
+    // -----------------------------------------------------------------------
     // NOTIFICATION
     // -----------------------------------------------------------------------
     function afficherNotification(message, titre) {

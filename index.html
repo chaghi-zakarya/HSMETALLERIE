@@ -97,6 +97,47 @@
             .slideshow-arrow { width: 44px; height: 44px; font-size: 1.1rem; }
             .slideshow-close { font-size: 2rem; top: 1rem; right: 1rem; }
         }
+
+        /* MENU MOBILE (hamburger) */
+        .burger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.6rem;
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+        }
+        @media (max-width: 900px) {
+            nav > ul { display: none; }
+            .burger-btn { display: block; }
+
+            nav.mobile-open > ul {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--primary-blue);
+                padding: 0.5rem 0;
+                gap: 0;
+                box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            }
+            nav.mobile-open > ul li {
+                width: 100%;
+                border-top: 1px solid rgba(255,255,255,0.08);
+            }
+            nav.mobile-open > ul li a {
+                display: block;
+                padding: 0.9rem 2rem;
+            }
+            nav.mobile-open > ul li .btn-devis-nav {
+                display: block;
+                text-align: center;
+                margin: 0.6rem 2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -108,16 +149,19 @@
                 <img src="assets/img/logo-icon.png" alt="" style="height: 45px; width: auto;">
                 <div class="logo-text">HS <span>METALLERIE</span></div>
             </div>
-            <nav>
+            <nav id="mainNav">
                 <ul>
-                    <li><a href="#accueil">Accueil</a></li>
-                    <li><a href="#a-propos">À propos</a></li>
-                    <li><a href="#prestations">Prestations</a></li>
-                    <li><a href="#realisations">Réalisations</a></li>
-                    <li><a href="#engagements">Engagements</a></li>
-                    <li><a href="#devis" class="btn-devis-nav">Demander un Devis</a></li>
+                    <li><a href="#accueil" onclick="fermerMenuMobile()">Accueil</a></li>
+                    <li><a href="#a-propos" onclick="fermerMenuMobile()">À propos</a></li>
+                    <li><a href="#prestations" onclick="fermerMenuMobile()">Prestations</a></li>
+                    <li><a href="#realisations" onclick="fermerMenuMobile()">Réalisations</a></li>
+                    <li><a href="#engagements" onclick="fermerMenuMobile()">Engagements</a></li>
+                    <li><a href="#devis" class="btn-devis-nav" onclick="fermerMenuMobile()">Demander un Devis</a></li>
                 </ul>
             </nav>
+            <button class="burger-btn" id="burgerBtn" onclick="toggleMenuMobile()" aria-label="Ouvrir le menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
         </div>
     </header>
 

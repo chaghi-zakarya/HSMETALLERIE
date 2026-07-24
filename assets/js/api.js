@@ -148,9 +148,48 @@
         if (error) throw error;
     }
 
+    // Modifie titre/description, garde certaines images existantes (keepImages)
+    // et ajoute de nouveaux fichiers uploadés (newFiles). Ne touche jamais aux
+    // images des AUTRES réalisations : tout est filtré par id.
+    async function modifierRealisation(id, { titre, description, keepImages, newFiles }) {
+        const urls = [...keepImages];
+        for (let i = 0; i < newFiles.length; i++) {
+            const file = newFiles[i];
+            const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+            const path = `${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+            const up = await sb().storage.from(BUCKET).upload(path, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
+            if (up.error) throw up.error;
+
+            const pub = sb().storage.from(BUCKET).getPublicUrl(path);
+            urls.push(pub.data.publicUrl);
+        }
+
+        const { error } = await sb().from('realisations')
+            .update({ titre, description, images: urls })
+            .eq('id', id);
+        if (error) throw error;
+    }
+
+    // Supprime du stockage les images retirées lors d'une modification (best-effort).
+    async function supprimerImagesStorage(images) {
+        if (!Array.isArray(images) || !images.length) return;
+        const marker = `/${BUCKET}/`;
+        const paths = images
+            .map(url => (url.includes(marker) ? url.split(marker)[1] : null))
+            .filter(Boolean);
+        if (paths.length) {
+            await sb().storage.from(BUCKET).remove(paths); // erreurs ignorées
+        }
+    }
+
     window.API = {
         escapeHtml, formatDate,
         creerDevis, listerDevis, changerStatutDevis, supprimerDevis,
-        listerRealisations, creerRealisation, supprimerRealisation
+        listerRealisations, creerRealisation, supprimerRealisation,
+        modifierRealisation, supprimerImagesStorage
     };
 })();

@@ -27,6 +27,48 @@
             </div>
             <div class="login-error" id="loginError"></div>
             <button type="submit" class="btn-primary full"><i class="fa-solid fa-right-to-bracket"></i> Se connecter</button>
+            <p style="text-align:center; margin-top:1rem; font-size:0.9rem;">
+                <a href="#" onclick="afficherMotDePasseOublie(event)" style="color:var(--primary-blue); font-weight:600;">Mot de passe oublié ?</a>
+            </p>
+        </form>
+    </div>
+
+    <!-- ÉCRAN "MOT DE PASSE OUBLIÉ" -->
+    <div id="forgotScreen" class="login-screen" style="display:none;">
+        <form class="login-card" id="formForgot">
+            <img src="assets/img/logo.png" alt="HS Metallerie" style="height: 56px; width: auto; display:block; margin: 0 auto 0.8rem;">
+            <div class="login-sub">Mot de passe oublié</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem; text-align:center;">
+                Indiquez votre email admin, nous vous enverrons un lien pour choisir un nouveau mot de passe.
+            </p>
+            <div class="login-error" id="forgotError" style="display:none;"></div>
+            <div class="login-error" id="forgotSuccess" style="display:none; background:#DCFCE7; color:#166534;"></div>
+            <div class="form-group">
+                <label for="forgotEmail">E-mail</label>
+                <input type="email" id="forgotEmail" required autocomplete="username" placeholder="admin@exemple.com">
+            </div>
+            <button type="submit" class="btn-primary full"><i class="fa-solid fa-paper-plane"></i> Envoyer le lien</button>
+            <p style="text-align:center; margin-top:1rem; font-size:0.9rem;">
+                <a href="#" onclick="retourConnexion(event)" style="color:var(--primary-blue); font-weight:600;">← Retour à la connexion</a>
+            </p>
+        </form>
+    </div>
+
+    <!-- ÉCRAN "NOUVEAU MOT DE PASSE" (après clic sur le lien reçu par email) -->
+    <div id="resetScreen" class="login-screen" style="display:none;">
+        <form class="login-card" id="formReset">
+            <img src="assets/img/logo.png" alt="HS Metallerie" style="height: 56px; width: auto; display:block; margin: 0 auto 0.8rem;">
+            <div class="login-sub">Choisissez un nouveau mot de passe</div>
+            <div class="login-error" id="resetError" style="display:none;"></div>
+            <div class="form-group">
+                <label for="resetPassword">Nouveau mot de passe (6 caractères minimum)</label>
+                <input type="password" id="resetPassword" required minlength="6" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label for="resetPasswordConfirm">Confirmer le nouveau mot de passe</label>
+                <input type="password" id="resetPasswordConfirm" required minlength="6" placeholder="••••••••">
+            </div>
+            <button type="submit" class="btn-primary full"><i class="fa-solid fa-check"></i> Valider le nouveau mot de passe</button>
         </form>
     </div>
 

@@ -114,9 +114,17 @@
             cursor: pointer;
             padding: 0.3rem 0.5rem;
         }
+        .logo-container { min-width: 0; }
+        .logo-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
         @media (max-width: 900px) {
             nav > ul { display: none; }
             .burger-btn { display: block; }
+            .nav-container { flex-wrap: nowrap; }
+            .logo-text { font-size: 1.15rem !important; }
 
             nav.mobile-open > ul {
                 display: flex;
@@ -143,6 +151,10 @@
                 text-align: center;
                 margin: 0.6rem 2rem;
             }
+        }
+        @media (max-width: 420px) {
+            .logo-text { font-size: 0.95rem !important; }
+            .nav-container { padding: 0.8rem 1rem; }
         }
     </style>
 </head>
